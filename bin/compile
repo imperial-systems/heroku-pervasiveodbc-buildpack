@@ -20,10 +20,10 @@ cp "./odbc.ini" "${BUILD_DIR}/etc/odbc.ini"
 cp "./odbcinst.ini" "${BUILD_DIR}/etc/odbcinst.ini"
 
 # Location for OBDC Driver
-stat Zen-Client-linux-x86_64-14.21.026.000.tar.gz
+stat Zen-Client-linux-x86_64-14.21.026.000
 mkdir -p "${BUILD_DIR}/usr"
 mkdir -p "${BUILD_DIR}/usr/local"
-cp -r "./Zen-Client-linux-x86_64-14.21.026.000/*" -C "${BUILD_DIR}/usr/local/"
+cp -a "./Zen-Client-linux-x86_64-14.21.026.000/." "${BUILD_DIR}/usr/local/"
 
 # Rename the problematic driver files
 cp "${BUILD_DIR}/usr/local/actianzen/lib64/libpscl.so.14.20.005.000" "${BUILD_DIR}/usr/local/actianzen/lib64/libpscl.so.14"
