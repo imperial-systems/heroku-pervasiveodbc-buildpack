@@ -13,18 +13,18 @@ BUILD_DIR=$1
 
 # Things that we need:
 # Location for odbc.ini
-cp ./odbc.ini /etc/odbc.ini
+cp "./odbc.ini" "${BUILD_DIR}/etc/odbc.ini"
 
 # Location for odbcinst.ini
-cp ./odbcinst.ini /etc/odbcinst.ini
+cp "./odbcinst.ini" "${BUILD_DIR}/etc/odbcinst.ini"
 
 # Location for OBDC Driver
 stat Zen-Client-linux-x86_64-14.21.026.000.tar.gz
-tar -zxf Zen-Client-linux-x86_64-14.21.026.000.tar.gz -C /usr/local/
+tar -zxf Zen-Client-linux-x86_64-14.21.026.000.tar.gz -C "${BUILD_DIR}/usr/local/"
 
 # Rename the problematic driver files
-cp /usr/local/actianzen/lib64/libpscl.so.14.20.005.000 /usr/local/actianzen/lib64/libpscl.so.14
-cp /usr/local/actianzen/lib64/libpscore.so.14.20.005.000 /usr/local/actianzen/lib64/libpscore.so.14
+cp "${BUILD_DIR}/usr/local/actianzen/lib64/libpscl.so.14.20.005.000" "${BUILD_DIR}/usr/local/actianzen/lib64/libpscl.so.14"
+cp "${BUILD_DIR}/usr/local/actianzen/lib64/libpscore.so.14.20.005.000" "${BUILD_DIR}/usr/local/actianzen/lib64/libpscore.so.14"
 
 # Set Appropriate path variables
 export SASS_LIBSASS_PATH=$HOME/.local/lib
@@ -35,8 +35,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:$ACTIANZEN_ROOT/lib:$ACTIANZEN_
 export MANPATH=$MANPATH:$ACTIANZEN_ROOT/man
 
 # Run the pre/post install scripts
-sh /usr/local/actianzen/etc/clientpreinstall.sh
-sh /usr/local/actianzen/etc/clientpostinstall.sh
+sh "${BUILD_DIR}/usr/local/actianzen/etc/clientpreinstall.sh"
+sh "${BUILD_DIR}/usr/local/actianzen/etc/clientpostinstall.sh"
 export ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ACTIANZEN_ROOT/lib64
 
 arrow "------ Finished adding ODBC Driver ------"
