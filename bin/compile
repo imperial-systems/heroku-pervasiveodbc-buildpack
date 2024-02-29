@@ -23,7 +23,7 @@ cp "./odbcinst.ini" "${BUILD_DIR}/etc/odbcinst.ini"
 stat Zen-Client-linux-x86_64-14.21.026.000.tar.gz
 mkdir -p "${BUILD_DIR}/usr"
 mkdir -p "${BUILD_DIR}/usr/local"
-tar -zxf Zen-Client-linux-x86_64-14.21.026.000.tar.gz -C "${BUILD_DIR}/usr/local/"
+cp -r "./Zen-Client-linux-x86_64-14.21.026.000/*" -C "${BUILD_DIR}/usr/local/"
 
 # Rename the problematic driver files
 cp "${BUILD_DIR}/usr/local/actianzen/lib64/libpscl.so.14.20.005.000" "${BUILD_DIR}/usr/local/actianzen/lib64/libpscl.so.14"

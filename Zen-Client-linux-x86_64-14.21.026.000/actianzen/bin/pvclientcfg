@@ -1,0 +1,382 @@
+#!/bin/sh
+# Copyright 2019 Actian Corporation
+# This script displays the current settings of the Zen Linux Client
+# and then permits you to change settings by number. 
+# The Linux client stores its configuration settings using the Zen
+# registry. The psregedit utility is used to effect the actual changes
+# to the registry configuration.
+
+# Check the bitness of the OS.  If 64, we want to look for the
+# registry sections at *_64.
+if [ -d /lib64 ]; then
+   BITNESS="_64"
+else
+   BITNESS=
+fi
+
+# Check for valid permissions to modify PS registry
+curuserid=`whoami`
+pvswmember=`groups | grep -c "zen-data" | awk '{print $1}'`
+if [ "$pvswmember" = "0" ]; then
+   if [ "$curuserid" != "root" ]; then
+   echo
+   echo "WARNING:"
+   echo "The current user '$curuserid' is not a member of the group 'zen-data'."
+   echo "Only 'root' user and members of group 'zen-data' can alter configuration settings."
+   echo 
+   echo "Press ENTER to continue..."
+   read NOTHING;
+   lackspermissions="true"
+fi
+fi
+
+echo
+SEC_KEY="\"PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Security\""
+BRQ_KEY="\"PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Btrieve Requester\""
+COM_KEY="\"PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Communications Requester\""
+MKR_KEY="\"PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Microkernel Router\""
+
+echo
+INPUT_STRING=init
+
+verify() {
+  if [ -z "$1" ]
+    then
+     echo "WARNING: \"$2\" setting has an invalid value."
+  fi
+}
+
+
+
+getSettings() {
+
+echo
+echo "Zen Linux Client Configuration"
+echo "------------------------------------------"
+echo  
+echo "Reading configuration..."
+
+
+# Security settings
+SETENC=`psregedit -key $SEC_KEY -value "Wire Encryption" | grep -i "^[ ]*IF NEEDED$\|^[ ]*ALWAYS$\|^[ ]*NEVER$" | awk '{print $1 " " $2}'`
+  verify "$SETENC" "Wire Encryption"  
+SETENL=`psregedit -key $SEC_KEY -value "Wire Encryption Level" | grep "^[ ]*[1-3]$" | awk '{print $1}'`
+  verify "$SETENL" "Wire Encryption Level"
+
+# Btrieve Requester settings
+SETEMB=`psregedit -key $BRQ_KEY -value "Embedded Spaces" | grep -i "^[ ]*yes$\|^[ ]*no$" | awk '{print $1}'`
+  verify "$SETEMB" "Embedded Spaces"
+SETVKL=`psregedit -key $BRQ_KEY -value "Verify Key Length" | grep -i "^[ ]*yes$\|^[ ]*no$" | awk '{print $1}'`
+  verify "$SETVKL" "Verify Key Length"
+
+# MicroKernel Router settings
+SETLOC=`psregedit -key $MKR_KEY -value "Local" | grep -i "^[ ]*yes$\|^[ ]*no$" | awk '{print $1}'`
+  verify "$SETLOC" "Use Local MicroKernel Engine"
+SETREQ=`psregedit -key $MKR_KEY -value "Requester" | grep -i "^[ ]*yes$\|^[ ]*no$" | awk '{print $1}'`
+  verify "$SETREQ" "Use Remote MicroKernel Engine"
+SETIDS=`psregedit -key $MKR_KEY -value "Use IDS" | grep -i "^[ ]*yes$\|^[ ]*no$" | awk '{print $1}'`
+  verify "$SETIDS" "Use IDS"
+
+# Communications Requester settings
+SETREC=`psregedit -key $COM_KEY -value "Enable AutoReconnect" | grep -i "^[ ]*Yes$\|^[ ]*No$" | awk '{print $1}'`
+  verify "$SETREC" "Enable Auto Reconnect"
+
+
+}
+
+getSettings
+
+
+while [ "$INPUT_STRING" != "e" ]
+do
+
+
+echo
+echo "Security"
+echo " 1  Wire Encryption = $SETENC"
+echo " 2  Wire Encryption Level = $SETENL"
+echo
+echo "Btrieve Requester"
+echo " 3  Embedded Spaces = $SETEMB"
+echo " 4  Verify Key Length = $SETVKL"
+echo
+echo "MicroKernel Router"
+echo " 5  Use Local MicroKernel Engine = $SETLOC"
+echo " 6  Use Remote MicroKernel Engine = $SETREQ"
+echo " 7  Use IDS = $SETIDS"
+echo 
+echo "Communications Requester"
+echo " 8  Enable Auto Reconnect = $SETREC"
+echo
+
+echo "MENU:  c)hange setting, e)xit script, d)efault values, r)emove keys, h)elp"
+echo "       Please choose option and press ENTER"
+echo
+
+read INPUT_STRING
+
+if [ -n "$lackspermissions" ]; then
+ if [ "$INPUT_STRING" != "e" -a "$INPUT_STRING" != "h" -a "$INPUT_STRING" != "l" ]; then
+    INPUT_STRING="lackspermissions"
+fi
+fi
+
+ case $INPUT_STRING in
+         c)
+                echo "Enter setting number (1-8):"
+                read SETTING_NUM
+                case $SETTING_NUM in
+
+                1)
+                   echo
+                   echo "Wire Encryption - current value is '$SETENC'"
+                   echo "This setting is shared with any local server"
+                   echo "possible values are:"
+                   echo "1) IF NEEDED - default"
+                   echo "2) ALWAYS"
+                   echo "3) NEVER"
+                   echo "New value:"
+             
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="IF NEEDED";;
+                        2) NEWVAL="ALWAYS";;
+                        3) NEWVAL="NEVER";;
+                        *) NEWVAL="IF NEEDED"
+                           echo "Invalid choice: setting to default of 'IF NEEDED'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                    esac 
+ 
+                   psregedit -set -key $SEC_KEY -value "Wire Encryption" "$NEWVAL"
+                   SETENC=$NEWVAL
+                   ;;
+
+                2) 
+                   echo
+                   echo "Wire Encryption Level - current value is '$SETENL'"
+                   echo "This setting is shared with any local server"
+                   echo "possible values are:"
+                   echo "1) Low"
+                   echo "2) Medium - default"
+                   echo "3) High"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="1";;
+                        2) NEWVAL="2";;
+                        3) NEWVAL="3";;
+                        *) NEWVAL="2"
+                           echo "Invalid choice: setting to default of '2' (Medium)"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+
+                   esac 
+                   psregedit -set -key $SEC_KEY -value "Wire Encryption Level" $NEWVAL
+                   SETENL=$NEWVAL
+                   ;;
+
+                3)
+                   echo
+                   echo "Embedded Spaces = current value is '$SETEMB'"
+                   echo "possible values are:"
+                   echo "1) yes"
+                   echo "2) no - default"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="yes";;
+                        2) NEWVAL="no";;
+                        *) NEWVAL="no"
+                           echo "Invalid choice: setting to default of 'no'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                   esac 
+                   psregedit -set -key $BRQ_KEY -value "Embedded Spaces" $NEWVAL
+                   SETEMB=$NEWVAL
+                   ;;
+
+                4)
+                   echo
+                   echo "Verify Key Length = current value is '$SETVKL'"
+                   echo "possible values are:"
+                   echo "1) yes - default"
+                   echo "2) no"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="yes";;
+                        2) NEWVAL="no";;
+                        *) NEWVAL="yes"
+                           echo "Invalid choice: setting to default of 'yes'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                   esac 
+                   psregedit -set -key $BRQ_KEY -value "Verify Key Length" $NEWVAL
+                   SETVKL=$NEWVAL
+                   ;;
+
+                5)
+                   echo
+                   echo "Use Local MicroKernel Engine - current value is '$SETLOC'"
+                   echo "possible values are:"
+                   echo "1) yes - default"
+                   echo "2) no"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="yes";;
+                        2) NEWVAL="no";;
+                        *) NEWVAL="yes"
+                           echo "Invalid choice: setting to default of 'yes'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                   esac 
+                   psregedit -set -key $MKR_KEY -value "Local" $NEWVAL
+                   SETLOC=$NEWVAL
+                   ;;
+
+                6)
+                   echo
+                   echo "Use Remote MicroKernel Engine - current value is '$SETREQ'"
+                   echo "possible values are:"
+                   echo "1) yes - default"
+                   echo "2) no"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="yes";;
+                        2) NEWVAL="no";;
+                        *) NEWVAL="yes"
+                           echo "Invalid choice: setting to default of 'yes'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                   esac 
+                   psregedit -set -key $MKR_KEY -value "Requester" $NEWVAL
+                   SETREQ=$NEWVAL
+                   ;;
+
+                7)
+                   echo
+                   echo "Use IDS - current value is '$SETIDS'"
+                   echo "possible values are:"
+                   echo "1) yes"
+                   echo "2) no - default"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="yes";;
+                        2) NEWVAL="no";;
+                        *) NEWVAL="no"
+                           echo "Invalid choice: setting to default of 'no'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                   esac 
+                   psregedit -set -key $MKR_KEY -value "Use IDS" $NEWVAL
+                   SETREQ=$NEWVAL
+                   ;;
+
+                8)
+                   echo
+                   echo "Enable Auto Reconnect - current value is '$SETREC'"
+                   echo "possible values are:"
+                   echo "1) Yes"
+                   echo "2) No - default"
+                   echo "New value:"
+                   read NEWVAL
+                   case $NEWVAL in
+                        1) NEWVAL="Yes";;
+                        2) NEWVAL="No";;
+                        *) NEWVAL="No"
+                           echo "Invalid choice: setting to default of 'No'"
+                           echo "Press ENTER to continue..."
+                           read NOTHING;;
+                   esac 
+                   psregedit -set -key $COM_KEY -value "Enable AutoReconnect" $NEWVAL
+                   SETREC=$NEWVAL
+                   ;;
+
+                *)
+                   echo "Invalid selection - press ENTER to continue"
+                   read dummy
+                   ;;
+                esac
+                ;;
+
+        h|help|H|Help)
+                echo
+                echo "Help for Linux client configuration script"
+                echo "------------------------------------------"
+                echo "Copyright 2019 Actian Corporation"
+                echo 
+                echo "This script provides an interface to the psregedit utility," 
+                echo "which stores your Linux client configuration settings."
+                echo "For a complete reference of configuration settings, see"
+                echo "Advanced Operations Guide."
+                echo                
+                echo "c)hange setting - allows you to change Linux client settings"
+                echo "                  after the valid choices are displayed."
+                echo                
+                echo "d)efault values - returns all Linux client configuration"
+                echo "                  settings to the default values."
+                echo                
+                echo "r)emove keys    - uses psregedit to delete all the "
+                echo "                  Zen registry keys associated with "
+                echo "                  the Linux client."               
+                echo                
+                echo "Press ENTER to continue..."
+                read NOTHING
+                ;;
+
+        e|E|exit|x|X|Exit)
+                break
+                ;;
+     
+        l|L|load|Load)
+                getSettings
+                ;;
+     
+        lackspermissions)
+                echo
+                echo "'$curuserid' is not authorized to alter configuration settings."
+                echo "You must be 'root' user or member of group 'zend-data'."
+                echo
+                echo "Press ENTER to continue..."
+                read dummy
+                ;;     
+
+        d|D|defaults|Defaults)
+                echo
+                echo "Setting all Zen Linux client configuration keys with default values..."
+                echo
+                psregedit -set -key $SEC_KEY -value "Wire Encryption" "IF NEEDED"
+                psregedit -set -key $SEC_KEY -value "Wire Encryption Level" 2
+                psregedit -set -key $BRQ_KEY -value "Embedded Spaces" no
+                psregedit -set -key $BRQ_KEY -value "Verify Key Length" yes
+                psregedit -set -key $MKR_KEY -value "Local" yes
+                psregedit -set -key $MKR_KEY -value "Requester" yes
+                psregedit -set -key $MKR_KEY -value "Use IDS" no
+                psregedit -set -key $COM_KEY -value "Enable AutoReconnect" No
+                getSettings
+                echo
+                ;;
+        r|R|remove|Remove)
+                echo
+                echo "Deleting the following Linux client configuration keys:"
+                echo "    Security, Btrieve Requester, MicroKernel Router, Communications Requester"
+                echo "    All other keys are not affected"
+                psregedit -delete -key "PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Security"
+                psregedit -delete -key "PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Btrieve Requester"
+                psregedit -delete -key "PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Communications Requester"
+                psregedit -delete -key "PS_HKEY_CONFIG$BITNESS/Software/Actian/Zen/Microkernel Router"
+                echo "Exiting script..."
+                break
+                ;;
+        
+        *)
+                echo "Invalid choice - please try again"
+                ;;
+  esac
+done 
+echo
+

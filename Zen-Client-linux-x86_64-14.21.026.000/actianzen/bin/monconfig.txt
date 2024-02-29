@@ -1,0 +1,46 @@
+//comment- first two chars of line must be //
+//tagformat - starting at a new line, no spaces or quotes allowed
+//configuration data is case insensitive
+
+//Server name, cannot be blank
+server=127.0.0.1
+
+//DTI login username and password, can be blank
+username=
+password=
+
+//refreshrate in secs, minimal is 5 secs, set to 0 if you want to manually refresh. (default 0)
+refreshrate=5
+
+//limitrefresh - the number of times to refresh before stopping execution.  Set to 0 if you want
+//               to manually stop execution (using 'Q' or 'q').  Default value is 0.  Max value
+//               is 2147483647.
+// Note: In a remote PowerShell session, where there is an absence of "user interaction support",
+//       limitrefresh can be used to stop execution.
+limitrefresh=0
+
+//Output source
+// Options: (default logfile)
+// - console
+// - logfile
+// - both
+output=both
+
+//Output path and file name (default monitor.log)
+//Will create directory if does not exist
+name=monitor.log
+
+//Monitor Activities
+// Options - Yes or No (default Yes)
+// The Connections option is not available for Btrieve 12, only PSQL
+// The Connections option should be set to "No" if Relational Engine is off
+// For backward compatibility, Users may be used in place of Sessions
+Files=Yes
+Sessions=Yes
+Connections=Yes
+ResourceStats=Yes
+CommunicationStats=Yes
+
+//Handle Details, if user wants handle details to be printed
+//Options - Yes or No (default Yes)
+HandleDetail=Yes

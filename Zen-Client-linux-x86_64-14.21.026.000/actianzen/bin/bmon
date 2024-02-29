@@ -1,0 +1,11 @@
+ACTIANZEN_ROOT=/usr/local/actianzen
+
+# If running under Macosx.
+if [ $(uname -s) = "Darwin" ]
+then
+	export DYLD_LIBRARY_PATH=$ACTIANZEN_ROOT/lib64:$DYLD_LIBRARY_PATH
+   $ACTIANZEN_ROOT/jre/bin/java -jar $ACTIANZEN_ROOT/bin/monitorcli.jar $1 $2 $3 $4 $5
+else
+	export LD_LIBRARY_PATH=$ACTIANZEN_ROOT/lib64:$LD_LIBRARY_PATH
+   $ACTIANZEN_ROOT/jre/bin/java -jar $ACTIANZEN_ROOT/bin/monitorcli.jar $1 $2 $3 $4 $5
+fi
