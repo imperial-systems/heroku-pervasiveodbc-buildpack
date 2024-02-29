@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# This stuff came standard, unsure what to do about it
+arrow() {
+  echo '----->' "$@"
+}
+
+indent() {
+  sed -u 's/^/       /'
+}
+arrow "Starting adding Pervasive ODBC Driver 14"
+BUILD_DIR=$1
+
+# Things that we need:
+# Location for odbc.ini
+cp ./odbc.ini /etc/odbc.ini
+
+# Location for odbcinst.ini
+cp ./odbcinst.ini /etc/odbcinst.ini
+
+# Location for OBDC Driver
+stat Zen-Client-linux-x86_64-14.21.026.000.tar.gz
+tar -zxf Zen-Client-linux-x86_64-14.21.026.000.tar.gz -C /usr/local/
+
+# Rename the problematic driver files
+cp /usr/local/actianzen/lib64/libpscl.so.14.20.005.000 /usr/local/actianzen/lib64/libpscl.so.14
+cp /usr/local/actianzen/lib64/libpscore.so.14.20.005.000 /usr/local/actianzen/lib64/libpscore.so.14
+
+# Set Appropriate path variables
+export SASS_LIBSASS_PATH=$HOME/.local/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SASS_LIBSASS_PATH
+export ACTIANZEN_ROOT=/usr/local/actianzen
+export PATH=$PATH:$ACTIANZEN_ROOT/bin:/bin:/usr/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:$ACTIANZEN_ROOT/lib:$ACTIANZEN_ROOT/bin
+export MANPATH=$MANPATH:$ACTIANZEN_ROOT/man
+
+# Run the pre/post install scripts
+sh /usr/local/actianzen/etc/clientpreinstall.sh
+sh /usr/local/actianzen/etc/clientpostinstall.sh
+export ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ACTIANZEN_ROOT/lib64
+
+arrow "------ Finished adding ODBC Driver ------"
