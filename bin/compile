@@ -13,6 +13,7 @@ BUILD_DIR=$1
 
 # Things that we need:
 # Location for odbc.ini
+mkdir -p "${BUILD_DIR}/etc"
 cp "./odbc.ini" "${BUILD_DIR}/etc/odbc.ini"
 
 # Location for odbcinst.ini
@@ -20,6 +21,8 @@ cp "./odbcinst.ini" "${BUILD_DIR}/etc/odbcinst.ini"
 
 # Location for OBDC Driver
 stat Zen-Client-linux-x86_64-14.21.026.000.tar.gz
+mkdir -p "${BUILD_DIR}/usr"
+mkdir -p "${BUILD_DIR}/usr/local"
 tar -zxf Zen-Client-linux-x86_64-14.21.026.000.tar.gz -C "${BUILD_DIR}/usr/local/"
 
 # Rename the problematic driver files
